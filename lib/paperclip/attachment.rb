@@ -326,6 +326,20 @@ module Paperclip
       end
     end
 
+    # Like reprocess! but doesn't try to save the instance we're attached to
+    def reprocess(*style_args)
+      saved_only_process, @options[:only_process] = @options[:only_process], style_args
+      begin
+        assign(self)
+        save
+      rescue Errno::EACCES => e
+        warn "#{e} - skipping file."
+        false
+      ensure
+        @options[:only_process] = saved_only_process
+      end
+    end
+
     # Returns true if a file has been assigned.
     def file?
       !original_filename.blank?
